@@ -1,0 +1,10 @@
+#!/bin/sh
+
+source ../source-me
+export PYTHONPATH="$PYTHONPATH:$PWD/setup"
+
+if [ "$#" == "0" ] ; then
+	py.test --cov-report term-missing --cov=YNM all
+else
+	py.test --cov-report term-missing --cov=YNM "$@"
+fi

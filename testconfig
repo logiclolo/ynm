@@ -1,0 +1,79 @@
+#!/usr/local/bin/python-2.7.7-32bits
+
+# -*- coding: utf-8 -*-
+
+from YNM.camera.camera import *
+from YNM.camera.service.streaming import *
+from YNM.camera.service.config import *
+import argparse
+from pprint import pprint
+
+try:
+    #cam = Camera(args.URL, args.user, args.passwd)
+    config = {'ip': '172.16.2.192', 'user': 'root', 'passwd': ''}
+    cam = Camera(config)
+    #streaming = DataBrokerStreaming(cam)
+    #streaming.connect()
+    config = Configer(cam)
+
+    '''
+    video_config = {
+        "codec":"h265",
+        "prioritypolicy": "cbr",
+        "bitrate": "2Mbps",
+        "intraperiod": "1s"
+    }
+
+    #set method 1 : config in python
+    privacymaskConfig = {
+        "enable":"0",
+        "win":{
+            "i0":{
+                "enable": "0",
+                "name": "1",
+            },
+            "i1":{
+                "enable": "0",
+                "name": "2",
+            }
+        },
+    }
+    config.set_group("privacymask_c0", privacymaskConfig)
+
+    #set method2: config in json file
+    pConf = config.load_conf_file("tpl/privacymask.json")
+    config.set_group("privacymask_c0", pConf)
+
+    #set method3: special setting for videoin
+    videoConfig = config.load_conf_file("tpl/h265_cbr_2m.json")
+    config.set_videoin(videoConfig)
+    '''
+
+    #set method4: set by dict
+    conf = Config()
+    conf.videoin.c0.s1.resolution='800x600'
+    conf.videoin.c0.s1.enableeptz='1'
+    conf.videoin.c0.s1.h264.intraperiod='2000'
+    conf.videoin.c0.s1.h264.ratecontrolmode='cbr'
+    conf.videoin.c0.s1.h264.qpercent='70'
+    conf.videoin.c0.s1.h264.bitrate='2000000'
+    conf.videoin.c0.s1.h264.maxframe='30'
+    pprint(conf)
+    config.set(conf)
+
+    # get method 1: format dict
+    c = config.get('system&capability')
+    capability = c.capability
+    system = c.system
+    print "capability.videoin.c0.mode0.maxfps.h264 :", capability.videoin.c0.mode0.maxfps.h264
+    print "capability.videoin.c0.mode0.maxresolution :", capability.videoin.c0.mode0.maxresolution
+    print "capability.videoin.c0.mode :", capability.videoin.c0.mode
+    print "capability.version.onviftesttool :", capability.version.onviftesttool
+    print "system_daylight_timezones :", system.daylight.timezones
+
+    # backup & restore config
+    c = config.get('privacymask')
+    config.set(c)
+
+except KeyboardInterrupt:
+    print "Program exit."

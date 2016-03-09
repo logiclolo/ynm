@@ -1,0 +1,10 @@
+{
+	"resolution"	 : "800x600",
+	"enableeptz"	 : "1",
+	"stream"         : "1",
+	"ratecontrolmode": "cbr",
+	"bitrate"        : "2Mbps",
+	"intraperiod"    : "2S",
+	"maxframe"		 : "30",
+	"qpercent"		 : "70"
+}

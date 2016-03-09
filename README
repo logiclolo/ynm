@@ -1,0 +1,22 @@
+-- ynm usage --
+
+`ynm' is a simple script which is used for testing YNM library.  You can invoke
+ynm like the following to start a simple test session
+
+	$ ./ynm <ip>
+
+-- robot --
+
+Robot is program which uses YNM to test IP camera.  Update `setting.py` to
+specify IP/username/passwd.  Use following command to run robot. 
+
+Run all robot tests:
+	$ cd robot
+	$ make all
+
+Run quick robot tests:
+	$ cd robot 
+	$ make quick 
+
+-- YNM document --
+See http://rd1-3/~klaymen.chang/doc/ynm.html for more detail.

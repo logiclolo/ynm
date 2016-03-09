@@ -1,0 +1,70 @@
+function detect_ynm_path ()
+{
+	local ynm_path=""
+	while [ 1 ] ; do
+		if [ $PWD != "/" ] ; then
+			if [ ! -f "$PWD/ynm.py" ] ; then
+				cd ..
+			else
+				ynm_path=$PWD
+				break
+			fi
+		else
+			break
+		fi
+	done
+	echo $ynm_path
+}
+
+function detect_onefw_path ()
+{
+	local ONEFW="$PWD"
+	local templates="[^/]*/lib/test [^/]*/lib/robot [^/]*/lib"
+	for template in $templates; do
+		result=`echo $PWD | grep $template`
+		if [ "`echo $PWD | grep $template`" != "" ] ; then
+			ONEFW=`echo $PWD | sed -e "s:$template::"`
+			break
+		fi
+	done
+
+	echo "$ONEFW"
+}
+
+function detect_3rd_party ()
+{
+	echo "/usr/local/cellar/autotest/usr"
+}
+
+function check_folders ()
+{
+	local folders=$1
+	local any_missing=0
+	for folder in $folders; do
+		if [ ! -d "$folder" ] ; then 
+			echo "folder: \"$folder\" missing" 
+			any_missing=1
+		fi
+	done
+}
+ 
+#ONEFW=`detect_onefw_path`
+YNM="`detect_ynm_path`"
+THIRDPARTY="`detect_3rd_party`"
+
+THIRDPARTY_LIBRARY_PATH="$THIRDPARTY/lib"
+#YNM_LIBRARY_PATH="$ONEFW/ynm/lib/YNM/databroker/libs"
+YNM_LIBRARY_PATH="$YNM/YNM/databroker/libs"
+
+#FOLDER_TO_CHECK="$ONEFW $YNM $THIRDPARTY $YNM_LIBRARY_PATH $THIRDPARTY_LIBRARY_PATH"
+FOLDER_TO_CHECK="$YNM $THIRDPARTY $YNM_LIBRARY_PATH $THIRDPARTY_LIBRARY_PATH"
+check_folders "$FOLDER_TO_CHECK"
+if [ $? -ne 0 ]; then
+	return
+fi
+
+export LD_LIBRARY_PATH="$THIRDPARTY_LIBRARY_PATH:$YNM_LIBRARY_PATH" 
+export PYTHONPATH="$PYTHONPATH:$YNM"
+export PATH=$THIRDPARTY/bin:$PATH
+
+# vim: ft=sh

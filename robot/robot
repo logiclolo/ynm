@@ -1,0 +1,10 @@
+#!/bin/sh
+
+source ../source-me
+export PYTHONPATH="$PYTHONPATH:$PWD/setup"
+
+if [ "$#" == "0" ] ; then
+	py.test all
+else
+	py.test "$@"
+fi

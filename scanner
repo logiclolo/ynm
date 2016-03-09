@@ -1,0 +1,16 @@
+#!/bin/sh
+
+temp_file=`mktemp`
+iw2_air -s '' > $temp_file
+
+echo "writing $temp_file"
+cameras=`cat $temp_file | sed -e 's/\x1b[^m]*m//g' | grep -v LOCKED | grep "[0-9A-F]:" | awk '{print $3}'`
+
+. ./source-me
+
+for cam in $cameras; do
+	./ynm $cam 
+done
+
+echo "deleting $temp_file"
+rm -f $temp_file
