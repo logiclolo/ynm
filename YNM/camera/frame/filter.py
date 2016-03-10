@@ -22,12 +22,10 @@ class Bitrate(object):
         return self.bps
 
 
-"""IFilter defines the interface of filter.  All kinds of filter should follow
-IFilter
-"""
-
-
 class IFilter (object):
+
+    """IFilter defines the interface of filter.  All kinds of filter should
+    follow IFilter """
 
     __metaclass__ = abc.ABCMeta
 
@@ -41,11 +39,6 @@ class IFilter (object):
     def __add__(self, other):
         filters = [self, other]
         return AndFilter(filters)
-
-#     """ AND-ing filters """
-#     def __radd__(self, other):
-#         filters = [other, self]
-#         return AndFilter(filters)
 
     """ AND-ing filters """
     def __and__(self, other):
@@ -62,13 +55,12 @@ class IFilter (object):
         return NotFilter(self.filter)
 
 
-""" Filter combination.  AndFilter is a kind of filter which doesn't
-filter it self.  Instead, it store filters in an array and use these filters to
-determine if input matches the criteria.
-"""
-
-
 class AndFilter(IFilter):
+
+    """ Filter combination.  AndFilter is a kind of filter which doesn't filter
+    it self.  Instead, it store filters in an array and use these filters to
+    determine if input matches the criteria.  """
+
     def __init__(self, filters):
         self._filters = filters
 
@@ -84,13 +76,13 @@ class AndFilter(IFilter):
 
 IFilter.register(AndFilter)
 
-""" Filter combination.  OrFilter is a kind of filter which doesn't
-filter it self.  Instead, it store filters in an array and use these filters to
-determin if input matches the criteria
-"""
-
 
 class OrFilter(IFilter):
+
+    """ Filter combination.  OrFilter is a kind of filter which doesn't filter
+    it self.  Instead, it store filters in an array and use these filters to
+    determin if input matches the criteria """
+
     def __init__(self, filters):
         self._filters = filters
 
@@ -105,13 +97,12 @@ class OrFilter(IFilter):
         return self._filters
 
 
-""" Filter combination.  NotFilter is a kind of filter which doesn't
-filter it self.  Instead, it store filters in an array and use these filters to
-determin if input matches the criteria
-"""
-
-
 class NotFilter(IFilter):
+
+    """ Filter combination.  NotFilter is a kind of filter which doesn't filter
+    it self.  Instead, it store filters in an array and use these filters to
+    determin if input matches the criteria """
+
     def __init__(self, filter):
         self._filter = filter
 
@@ -120,10 +111,11 @@ class NotFilter(IFilter):
             return False
         return True
 
-""" Filter factory.  Return a filter object by giving a parameter """
-
 
 def Filter(criteria, param1=0):
+
+    """ Filter factory.  Return a filter object by giving a parameter """
+
     if criteria == "video":
         return VideoFilter()
     elif criteria == "audio":
@@ -140,9 +132,11 @@ def Filter(criteria, param1=0):
         return GOPFilter(param1)
     elif criteria == "codecfilter":
         return CodecFilter(str(param1))
-    elif criteria == "h264" or criteria == "h265" or criteria == "mjpeg" or criteria == "mpeg4":
+    elif (criteria == "h264" or criteria == "h265" or criteria == "mjpeg" or
+          criteria == "mpeg4"):
         return CodecFilter(criteria)
-    elif criteria == "g726" or criteria == "g711" or criteria == "aac4" or criteria == "gamr":
+    elif (criteria == "g726" or criteria == "g711" or criteria == "aac4" or
+          criteria == "gamr"):
         return CodecFilter(criteria)
     elif criteria == "measure":
         return MeasureFilter()
@@ -152,12 +146,11 @@ def Filter(criteria, param1=0):
         raise Exception("nosuchfilter (%s)" % criteria)
 
 
-""" TimeIcnreasingFilter. `filter()` returns `True` if input frame timestamp is
-greater or equal then previous frame
-"""
-
-
 class TimeIncreasingFilter (IFilter):
+
+    """ TimeIcnreasingFilter. `filter()` returns `True` if input frame timestamp
+    is greater or equal then previous frame """
+
     def __init__(self):
         self._previous_frame = None
 
@@ -177,13 +170,12 @@ class TimeIncreasingFilter (IFilter):
 IFilter.register(TimeIncreasingFilter)
 
 
-""" TimeNoJumpForwardFilter. `filter()` returns `True` if input frame timestamp
-difference is less or equal than parameter `forward_gap` (default = 5
-seconds)
-"""
-
-
 class TimeNoJumpForwardFilter (IFilter):
+
+    """ TimeNoJumpForwardFilter. `filter()` returns `True` if input frame
+    timestamp difference is less or equal than parameter `forward_gap` (default
+    = 5 seconds) """
+
     def __init__(self, forward_gap=5):
         self._previous_frame = None
         self._forward_gap = forward_gap
@@ -198,6 +190,7 @@ class TimeNoJumpForwardFilter (IFilter):
 
             if (current_time - previous_time).total_seconds() <= self._forward_gap:
                 self._previous_frame = input_frame
+
                 return True
             else:
                 self._previous_frame = input_frame
@@ -205,12 +198,10 @@ class TimeNoJumpForwardFilter (IFilter):
 IFilter.register(TimeNoJumpForwardFilter)
 
 
-""" TimeDecreasingFilter. `filter()` returns `True` if input time stamp is less
-then previous frame
-"""
-
-
 class TimeDecreasingFilter (IFilter):
+
+    """ TimeDecreasingFilter. `filter()` returns `True` if input time stamp is
+    less then previous frame """
 
     def __init__(self):
         self._previous_frame = None
@@ -230,10 +221,11 @@ class TimeDecreasingFilter (IFilter):
                 return False
 IFilter.register(TimeDecreasingFilter)
 
-""" VideoFilter. `filter()` returns `True` if input frame is video frame """
-
 
 class VideoFilter (IFilter):
+
+    """ VideoFilter. `filter()` returns `True` if input frame is video frame """
+
     def filter(self, input_frame):
         codecs = ['H264', 'JPEG', 'HEVC', 'MPEG4']
         if str(input_frame.codec) in codecs:
@@ -242,10 +234,10 @@ class VideoFilter (IFilter):
 IFilter.register(VideoFilter)
 
 
-""" AudioFilter. `filter()` returns `True` if input frame is audio frame """
-
-
 class AudioFilter (IFilter):
+
+    """ AudioFilter. `filter()` returns `True` if input frame is audio frame """
+
     def filter(self, input_frame):
         codecs = ['G726', 'G711', 'GAMR', 'AAC4']
         if str(input_frame.codec) in codecs:
@@ -254,10 +246,11 @@ class AudioFilter (IFilter):
 IFilter.register(AudioFilter)
 
 
-""" KeyFrameFilter. `filter()` returns `True` if input frame is key frame.  """
-
-
 class KeyFrameFilter (IFilter):
+
+    """ KeyFrameFilter. `filter()` returns `True` if input frame is key frame.
+    """
+
     def __init__(self):
         pass
 
@@ -269,15 +262,18 @@ class KeyFrameFilter (IFilter):
 IFilter.register(KeyFrameFilter)
 
 
-""" CodecFilter. `filter()` returns `True` if input frame codec matches `codec`
-which were set when `__init__` called
-"""
-
-
 class CodecFilter(IFilter):
+
+    """ CodecFilter. `filter()` returns `True` if input frame codec matches
+    `codec` which were set when `__init__` called """
+
     def __init__(self, codec):
         # only video codecs right now
-        mapping = {'mjpeg': 'JPEG', 'mpeg4': 'MPEG4', 'h264': 'H264', 'h265': 'HEVC', 'g711': 'G711', 'g726': 'G726', 'aac4': 'AAC', 'gamr': 'GAMR'}
+
+        mapping = {'mjpeg': 'JPEG', 'mpeg4': 'MPEG4', 'h264': 'H264', 'h265':
+                   'HEVC', 'g711': 'G711', 'g726': 'G726', 'aac4': 'AAC',
+                   'gamr': 'GAMR'}
+
         if codec in mapping.keys():
             self._codec = mapping[codec]
         else:
@@ -290,11 +286,11 @@ class CodecFilter(IFilter):
 IFilter.register(CodecFilter)
 
 
-""" GOPFilter. `filter()` returns `False` when GOP size doesn't match `_gopsize`
-which were set when `__init__` called """
-
-
 class GOPFilter(IFilter):
+
+    """ GOPFilter. `filter()` returns `False` when GOP size doesn't match
+    `_gopsize` which were set when `__init__` called """
+
     def __init__(self, gopsize=30):
         self._gopsize = gopsize
         self._predframe_count = -1
@@ -314,29 +310,33 @@ class GOPFilter(IFilter):
         return True
 IFilter.register(GOPFilter)
 
-""" ResolutilFilter. `filter()` returns `False` when input frame resolution
-doesn't match """
-
 
 class ResolutionFilter(IFilter):
+
+    """ ResolutilFilter. `filter()` returns `False` when input frame resolution
+    doesn't match """
+
     def __init__(self, resolution):
         self._width, self._height = resolution.split('x')
 
     def filter(self, input_frame):
-        print input_frame.width, input_frame.height
-        print self._width, self._height
-        if int(input_frame.width) == int(self._width) and int(input_frame.height) == int(self._height):
-            print "returns True"
+        iwidth = int(input_frame.width)
+        iheight = int(input_frame.height)
+        swidth = int(self._width)
+        sheight = int(self._height)
+
+        if (iwidth == swidth and iheight == sheight):
             return True
 
-        print "returns false"
         return False
 IFilter.register(ResolutionFilter)
 
-""" MeasureFilter. `filter()` never returns `False`, just measure fps/bitrate """
-
 
 class MeasureFilter(IFilter):
+
+    """ MeasureFilter. `filter()` never returns `False`, just measure
+    fps/bitrate """
+
     def __init__(self):
         self._fps_meta = {}
         self.fps = 0
@@ -354,7 +354,8 @@ class MeasureFilter(IFilter):
         if self._first_frame is None:
             self._first_frame = input_frame
         else:
-            self.played = (input_frame.time - self._first_frame.time).total_seconds()
+            self.played = (input_frame.time -
+                           self._first_frame.time).total_seconds()
 
         if time_key in self._fps_meta:
             self._fps_meta[time_key] += 1
