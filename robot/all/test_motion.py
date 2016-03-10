@@ -8,8 +8,8 @@ import time
 def test_motion_polygon_with_sense100_objsize1_rotate(cam, configer, streaming,
                                                       motion, request):
 
-    # Test motion. Create poloygons with sensitivity 100 objsize 1 and rotate if
-    # device supports this feature
+    # Test motion. Create poloygons with sensitivity 100, objsize 1 and rotate
+    # if device supports this feature
 
     helper_motion_clear_all(configer, cam, motion)
     clear = 'videoin_c0_rotate=0&motion_c0_enable=0'
