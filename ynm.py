@@ -1,4 +1,4 @@
-#!/usr/local/bin/python-2.7.7-32bits
+#!/usr/bin/env python
 
 # -*- coding: utf-8 -*-
 
