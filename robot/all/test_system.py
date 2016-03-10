@@ -19,13 +19,17 @@ def test_system_daylight_saving_time_simple(configer, cam, request):
     request.addfinalizer(fin)
 
     # we uses New York City to run day light saving time
-    dst = "system_timezoneindex=-200&system_daylight_enable=1&system_updateinterval=0"
+    dst = ""
+    dst += "system_timezoneindex=-200&"
+    dst += "system_daylight_enable=1&"
+    dst += "system_updateinterval=0"
 
     configer.set(dst)
     time.sleep(5)
 
     # New York City enters daylight saving time at 2016/03/13 02:00:00
-    enters_dst = "system_datetime=031301592016.58"
+    # We set camera time to 2016/03/13 01:59:55
+    enters_dst = "system_datetime=031301592016.55"
     configer.set(enters_dst)
     time.sleep(1)
 
@@ -34,13 +38,22 @@ def test_system_daylight_saving_time_simple(configer, cam, request):
     hour, _, _ = c.system.time.split(':')
     assert int(hour) == 1, "Camera time doesn't get configured correctly"
 
-    time.sleep(5)
+    # If all set, wait 4 seconds for camera to go across 2:00.  Clock should
+    # jump forward to 3:00
+    time.sleep(4)
 
-    # Camera should enters DST, get its time to check
+    for i in range(0, 10):
+        # Camera should enters DST, get its time to check
+        c = configer.get('system')
+        hour, _, _ = c.system.time.split(':')
+        if int(hour) == 3:
+            return
+        time.sleep(1)
+
     c = configer.get('system')
-    hour, _, _ = c.system.time.split(':')
-
-    assert int(hour) == 3, "Camera should enters daylight saving time"
+    assert False, 'Camera should enters daylight saving time. Expecting camera ' \
+        'time advance 1 hour (03:00:00 or later). Get %s from camera instead' % \
+        (c.system.time)
 
 
 @pytest.mark.slow
