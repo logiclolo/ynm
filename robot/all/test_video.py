@@ -148,7 +148,7 @@ def test_video_snapshot_resolution_matches_with_roi(cam, configer,
 
     status, image = snapshot.take()
     assert status is True, "Snapshot fake failed"
-    assert image.size[0] == int(width), "Expect snapshot width matches ROI\
-        width"
-    assert image.size[1] == int(height), "Expect snapshot height matches ROI\
-        height"
+    assert image.size[0] == int(width), \
+        "Expect snapshot width matches ROI width"
+    assert image.size[1] == int(height), \
+        "Expect snapshot height matches ROI height"
