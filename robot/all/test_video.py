@@ -121,6 +121,13 @@ def test_video_switch_video_mode(cam, configer, snapshot, request, streaming):
 @pytest.mark.snapshot
 def test_video_snapshot_resolution_matches_with_roi(cam, configer,
                                                     snapshot, request):
+
+    # Test if snapshot resolution matches with ROI configuration
+    # Snapshot taken with `streamid' provided should matches with roi_cx_sx_size
+    # For example, if roi_c0_s0_size == 640x480, then snapshot size taken with
+    # `streamid=0' should also be 640x480.  This test case verifies this, we
+    # change roi_c0_s0_size and take a snapshot to know if resolution matches
+
     caps = cam.capability
     c = configer.get('videoin')
     current_mode = c.videoin.c[0].mode
