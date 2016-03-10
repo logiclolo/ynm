@@ -32,10 +32,11 @@ def test_resolution_change_ok(cam, streaming, configer):
 
             streaming.connect()
             for i in range(0, 30):
+                # resolution may not change immediately, so we drop some frames
                 f = streaming.get_one_frame(video_filter)
 
             f = streaming.get_one_frame(video_filter)
-            print "frame: %dx%d" % (f.width, f.height)
+            print "frame got: %dx%d" % (f.width, f.height)
             assert resolution_filter.filter(f) is True, "Resolution change\
                 failed. Exp %s, Act %dx%d\n" % (resolution, f.width, f.height)
             streaming.disconnect()
