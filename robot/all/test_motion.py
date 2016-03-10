@@ -32,7 +32,7 @@ def test_motion_polygon_with_sense100_objsize1_rotate(cam, configer, streaming,
     v = configer.get('videoin')
     cur_mode = v.videoin.c[0].mode
     angles = [0]
-    if int(cam.capability.videoin.c[cur_mode].rotation) == 1:
+    if int(cam.capability.videoin.c[0]['mode%d' % cur_mode].rotation) == 1:
         angles = [0, 90, 270]
 
     motion.enable()
