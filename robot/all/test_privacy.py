@@ -29,7 +29,6 @@ def test_privacy_create_rectangle(snapshot, configer, cam, pmask,
     configer.set(setup)
 
     wins = helper_generate_pmask_windows()
-
     helper_privacy_rectangle_with_wins_rotate(snapshot, configer, cam, pmask,
                                               wins)
 
@@ -42,10 +41,24 @@ def helper_generate_pmask_windows():
     padding = 8
 
     # draw 4 rectangle at the corner of the pmask window
-    origins = [{'x': padding, 'y': padding},
-               {'x': base_width - step_width - padding, 'y': padding},
-               {'x': padding, 'y': base_height - step_height - padding},
-               {'x': base_width - step_width - padding, 'y': base_height - step_height - padding}]
+    origins = [
+        {
+            'x': padding,
+            'y': padding
+        },
+        {
+            'x': base_width - step_width - padding,
+            'y': padding
+        },
+        {
+            'x': padding,
+            'y': base_height - step_height - padding
+        },
+        {
+            'x': base_width - step_width - padding,
+            'y': base_height - step_height - padding
+        }
+    ]
     wins = []
     for idx, origin in enumerate(origins):
         win = {'enable': 1,
