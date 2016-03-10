@@ -96,7 +96,7 @@ class DataBrokerStreaming (IStreaming):
 
         return 0
 
-    def get_one_frame(self, custom_filter=None, timeout=2, frameout=300):
+    def get_one_frame(self, custom_filter=None, timeout=5, frameout=300):
         filtered = False
         frame_to_get = None
         frame_count = 0
