@@ -29,9 +29,9 @@ def helper_general_codec_bitrate_change_and_match(streaming,
 
         rate_config = float(bitrate)
         rate_measure = float(measure.bitrate)
-        assert rate_config * 0.95 <= rate_measure <= rate_config * 1.05, "%s\
-            audio bitrate doesn't match. Exp %d, Act %f" % (codec, bitrate,
-                                                            measure.bitrate)
+        assert rate_config * 0.95 <= rate_measure <= rate_config * 1.05, \
+            "%s audio bitrate doesn't match. Exp %d, Act %f" % (codec, bitrate,
+                                                                measure.bitrate)
 
         streaming.disconnect()
 

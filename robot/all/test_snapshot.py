@@ -252,5 +252,6 @@ def test_snapshot_eptz_affect_snapshot(cam, configer, snapshot):
     ssim_exact = ssim.ssim_exact(image_zoom_0_ref / 255, image_zoom_1_ref / 255)
     upper_bound = 0.950
 
-    assert ssim_exact < upper_bound, "SSIM too high, Image may not been zoomed.\
-        Exp %f, Act %f" % (upper_bound, ssim_exact)
+    assert ssim_exact < upper_bound, \
+        "SSIM too high, Image may not been zoomed. Exp %f, Act %f" % \
+        (upper_bound, ssim_exact)
