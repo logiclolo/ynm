@@ -5,6 +5,8 @@ from YNM.camera.frame.filter import video_filter
 import time
 
 
+@pytest.mark.skipif(True, reason="Skip this test before we know how to trigger"
+                    "motion stable")
 def test_motion_polygon_with_sense100_objsize1_rotate(cam, configer, streaming,
                                                       motion, request):
 
