@@ -7,8 +7,8 @@ from YNM.camera.discovery import wait_to_http_rechable, wait_to_http_unrechable
 from textwrap import wrap
 
 
-@pytest.mark.skipif(True, reason="This test case has not been implemented\
-                    correctly, skip this test")
+@pytest.mark.skipif(True, reason="This test case has not been implemented"
+                    "correctly, skip this test")
 @pytest.mark.reboot
 @pytest.mark.slow
 def test_firmware_upgrade(cam, configer):
