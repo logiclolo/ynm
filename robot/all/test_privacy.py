@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fixture import *
-from YNM.camera.service.privacy import cv_detect_windows, pil_to_opencv
+from YNM.utility.vvcv.vvcv import cv_detect_windows, pil_to_opencv
 import time
 import math
 

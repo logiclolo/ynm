@@ -259,16 +259,32 @@ def test_snapshot_eptz_affect_snapshot(cam, configer, snapshot):
 
 def test_snapshot_ocr(configer, snapshot, request):
 
-    configer.set('videoin_c0_imprinttimestamp=1')
+    # Test if camera could show text on video at snapshot correctly
+    #   a) original
+    #   b) rotate 90, 270
+    #   c) each stream
+
+    # Technical detail: This test case uses tesseract OCR to recognize text on
+    # video content.  tesseract recognizes text in unicode. But unicode stores
+    # variations, especailly symbols.  Try only to use a-z0-9 in video title to
+    # prevent error
+    video_title = 'ynmtest'
+    configer.set('videoin_c0_imprinttimestamp=1&videoin_c0_text=%s' % video_title)
+    sleep(1)
 
     # Test if text on video is working by enable/disable imprint text
     def fin():
-        configer.set('videoin_c0_imprinttimestamp=0')
+        configer.set('videoin_c0_imprinttimestamp=0&videoin_c0_text=')
     request.addfinalizer(fin)
 
-    from YNM.camera.service.snapshot import text_on_video
-    _, i = snapshot.take()
+    from YNM.utility.vvcv.vvcv import text_from_image
+    param = {'quality': '5'}
+    _, i = snapshot.take(param)
 
-    text = text_on_video(i)
-    print 'text is %s ' % text
-    assert text != "", "Expect something apperas in streaming when text on video is enabled"
+    text = text_from_image(i)
+    import re
+
+    pattern = "%s[ ]*\d\d\d\d/\d\d/\d\d[ ]*\d\d:\d\d:\d\d" % video_title
+    match = re.search(pattern, text)
+    print 'text is "%s" ' % text
+    assert match, "Expect something apperas in streaming when text on video is enabled"
