@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import re
 import StringIO
 import scipy
 import numpy
 from PIL import ImageOps
+from time import sleep
 
 import YNM.utility.video_quality.ssim as ssim
 from YNM.camera.service.ptz import ElectronicPTZ
-
+from YNM.utility.vvcv.vvcv import text_from_image
 from fixture import *
-from time import sleep
 
 
 def test_snapshot_custom_resolution(snapshot, configer, cam):
@@ -257,8 +258,6 @@ def test_snapshot_eptz_affect_snapshot(cam, configer, snapshot):
         (upper_bound, ssim_exact)
 
 
-from YNM.utility.vvcv.vvcv import text_from_image
-
 def test_snapshot_ocr(cam, configer, snapshot, request):
 
     # Test if camera could show text on video at snapshot correctly
@@ -271,8 +270,9 @@ def test_snapshot_ocr(cam, configer, snapshot, request):
     # variations, especailly symbols.  Try only to use a-z0-9 in video title to
     # prevent error
     video_title = 'ynmtest'
-    configer.set('videoin_c0_imprinttimestamp=1&videoin_c0_text=%s' % video_title)
-    sleep(1)
+    configer.set('videoin_c0_imprinttimestamp=1&videoin_c0_text=%s' %
+                 video_title)
+    sleep(0.3)
 
     # Test if text on video is working by enable/disable imprint text
     def fin():
@@ -282,21 +282,25 @@ def test_snapshot_ocr(cam, configer, snapshot, request):
     rotations = [0]
     c = configer.get('videoin_c0_mode')
     current_mode = c.videoin.c[0].mode
-    support_rotations = cam.capability.videoin.c[0]['mode%d' % current_mode].rotation
+    support_rotations = cam.capability.videoin.c[0]['mode%d' %
+                                                    current_mode].rotation
     if support_rotations:
         rotations = [0, 90, 180, 270]
 
+    nmediastream = cam.capability.nmediastream
+
     for rotate in rotations:
         configer.set('videoin_c0_rotate=%d' % rotate)
-        sleep(3)
+        sleep(2)
+        for idx in range(0, nmediastream):
 
-        param = {'quality': '5'}
-        _, i = snapshot.take(param)
+            param = {'resolution': '1024x768', 'quality': '5', 'streamid': idx}
+            _, i = snapshot.take(param)
+            i.save('before-crop.jpg')
 
-        text = text_from_image(i)
-        import re
+            text = text_from_image(i.crop((0, 0, 640, 80)))
 
-        pattern = "%s[ ]*\d\d\d\d/\d\d/\d\d[ ]*\d\d:\d\d:\d\d" % video_title
-        match = re.search(pattern, text)
-        print 'text is "%s" ' % text
-        assert match, "Expect something apperas in streaming when text on video is enabled"
+            pattern = "%s[ ]*\d\d\d\d.\d\d.\d\d[ ]*\d\d.\d\d.\d\d" % video_title
+            match = re.search(pattern, text)
+            print 'text is "%s" ' % text
+            assert match, "Expect something apperas in streaming when text on video is enabled"

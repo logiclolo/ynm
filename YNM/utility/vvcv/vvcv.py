@@ -7,22 +7,24 @@ import math
 from PIL import Image
 
 
-def text_from_image(snapshot_image):
-    def pil_to_opencv(pil):
-        # copy from
-        # http://stackoverflow.com/questions/14134892/convert-image-from-pil-to-opencv-format
-        opencv = numpy.array(pil)
-        opencv = opencv[:, :, ::-1].copy()
-        return opencv
+def pil_to_opencv(pil):
+    # copy from
+    # http://stackoverflow.com/questions/14134892/convert-image-from-pil-to-opencv-format
+    opencv = numpy.array(pil)
+    opencv = opencv[:, :, ::-1].copy()
+    return opencv
 
-    def opencv_to_pil(opencv):
-        # copy from
-        # http://stackoverflow.com/questions/13576161/convert-opencv-image-into-pil-image-in-python-for-use-with-zbar-library
-        pil = Image.fromarray(opencv)
-        return pil
+
+def opencv_to_pil(opencv):
+    # copy from
+    # http://stackoverflow.com/questions/13576161/convert-opencv-image-into-pil-image-in-python-for-use-with-zbar-library
+    pil = Image.fromarray(opencv)
+    return pil
+
+
+def text_from_image(snapshot_image):
 
     s = snapshot_image
-    s = s.crop((0, 0, 640, 80))
 #     s.save('orig.jpg')
     s = pil_to_opencv(s)
 
@@ -35,14 +37,6 @@ def text_from_image(snapshot_image):
 #     i_bin.save('output.jpg')
     text = pytesseract.image_to_string(i_bin)
     return text
-
-
-def pil_to_opencv(pil):
-    # copy from
-    # http://stackoverflow.com/questions/14134892/convert-image-from-pil-to-opencv-format
-    opencv = numpy.array(pil)
-    opencv = opencv[:, :, ::-1].copy()
-    return opencv
 
 
 def cv_detect_windows(images):
