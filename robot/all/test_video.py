@@ -128,16 +128,18 @@ def test_video_snapshot_resolution_matches_with_roi(cam, configer,
     # `streamid=0' should also be 640x480.  This test case verifies this, we
     # change roi_c0_s0_size and take a snapshot to know if resolution matches
 
+    # Setup
     caps = cam.capability
     c = configer.get('videoin')
     current_mode = c.videoin.c[0].mode
     mode = caps.videoin['c'][0]['mode%s' % current_mode]
+    # Select smallest resolution, typically 320x240
     resolution = mode.resolution[0]
     max_resolution = mode.maxresolution[0]
-    print 'resolutioni %s' % resolution
-    print 'max resolution %s' % max_resolution
-    configer.set('roi_c0_s0_size=%s' % resolution)
+
+    # Change resolution
     configer.set('videoin_c0_s0_resolution=%s' % resolution)
+    configer.set('roi_c0_s0_size=%s' % resolution)
 
     def fin():
         configer.set('videoin_c0_s0_resolution=%s' % max_resolution)
