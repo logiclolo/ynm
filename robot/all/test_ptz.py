@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from fixture import *
 from YNM.camera.service.ptz import PTZ, PanTiltable, Zoomable, Focusable
 from YNM.camera.service.ptz import AbsPanTiltable, AbsZoomable, AbsFocusable
