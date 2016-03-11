@@ -6,28 +6,17 @@ import time
 import math
 
 
-def test_privacy_create_rectangle(snapshot, configer, cam, pmask,
-                                  no_timestamp, request):
+def test_privacy_create_rectangle(snapshot, configer, cam, pmask, no_timestamp,
+                                  request, brightness100_contrast50):
 
     # Test to create privacy masks. This test case will generate 5 masks, 4 for
     # corners, 1 for single center dart shape mask
 
     def fin():
-        configer.set(teardown)
         helper_privacy_clear_all(configer, cam, pmask)
-
     request.addfinalizer(fin)
 
     helper_privacy_clear_all(configer, cam, pmask)
-
-    brightness_100 = 'image_c0_brightnesspercent=100'
-    brightness_50 = 'image_c0_brightnesspercent=50'
-    contrast_0 = 'image_c0_contrastpercent=0'
-    contrast_50 = 'image_c0_contrastpercent=50'
-    setup = brightness_100 + '&' + contrast_0
-    teardown = brightness_50 + '&' + contrast_50
-    configer.set(setup)
-
     wins = helper_generate_pmask_windows()
     helper_privacy_rectangle_with_wins_rotate(snapshot, configer, cam, pmask,
                                               wins)
