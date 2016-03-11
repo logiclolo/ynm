@@ -258,7 +258,8 @@ def test_snapshot_eptz_affect_snapshot(cam, configer, snapshot):
         (upper_bound, ssim_exact)
 
 
-def test_snapshot_ocr(cam, configer, snapshot, request):
+def test_snapshot_ocr(cam, configer, snapshot, request,
+                      brightness100_contrast50):
 
     # Test if camera could show text on video at snapshot correctly
     #   a) original
@@ -296,7 +297,7 @@ def test_snapshot_ocr(cam, configer, snapshot, request):
 
             param = {'resolution': '1024x768', 'quality': '5', 'streamid': idx}
             _, i = snapshot.take(param)
-            i.save('before-crop.jpg')
+#             i.save('before-crop.jpg')
 
             text = text_from_image(i.crop((0, 0, 640, 80)))
 
