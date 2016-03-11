@@ -257,7 +257,9 @@ def test_snapshot_eptz_affect_snapshot(cam, configer, snapshot):
         (upper_bound, ssim_exact)
 
 
-def test_snapshot_ocr(configer, snapshot, request):
+from YNM.utility.vvcv.vvcv import text_from_image
+
+def test_snapshot_ocr(cam, configer, snapshot, request):
 
     # Test if camera could show text on video at snapshot correctly
     #   a) original
@@ -277,14 +279,24 @@ def test_snapshot_ocr(configer, snapshot, request):
         configer.set('videoin_c0_imprinttimestamp=0&videoin_c0_text=')
     request.addfinalizer(fin)
 
-    from YNM.utility.vvcv.vvcv import text_from_image
-    param = {'quality': '5'}
-    _, i = snapshot.take(param)
+    rotations = [0]
+    c = configer.get('videoin_c0_mode')
+    current_mode = c.videoin.c[0].mode
+    support_rotations = cam.capability.videoin.c[0]['mode%d' % current_mode].rotation
+    if support_rotations:
+        rotations = [0, 90, 180, 270]
 
-    text = text_from_image(i)
-    import re
+    for rotate in rotations:
+        configer.set('videoin_c0_rotate=%d' % rotate)
+        sleep(3)
 
-    pattern = "%s[ ]*\d\d\d\d/\d\d/\d\d[ ]*\d\d:\d\d:\d\d" % video_title
-    match = re.search(pattern, text)
-    print 'text is "%s" ' % text
-    assert match, "Expect something apperas in streaming when text on video is enabled"
+        param = {'quality': '5'}
+        _, i = snapshot.take(param)
+
+        text = text_from_image(i)
+        import re
+
+        pattern = "%s[ ]*\d\d\d\d/\d\d/\d\d[ ]*\d\d:\d\d:\d\d" % video_title
+        match = re.search(pattern, text)
+        print 'text is "%s" ' % text
+        assert match, "Expect something apperas in streaming when text on video is enabled"
