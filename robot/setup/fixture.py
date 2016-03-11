@@ -102,3 +102,20 @@ def no_timestamp(configer, request):
     if str(c.videoin.c[0].imprinttimestamp) == '1':
         configer.set('videoin_c0_imprinttimestamp=0')
         request.addfinalizer(turn_on_timestamp)
+
+
+@pytest.fixture
+def brightness100_contrast50(configer, request):
+    brightness_100 = 'image_c0_brightnesspercent=100'
+    brightness_50 = 'image_c0_brightnesspercent=50'
+    contrast_0 = 'image_c0_contrastpercent=0'
+    contrast_50 = 'image_c0_contrastpercent=50'
+
+    def restore_brightness_contrast():
+        print 'Teardown!!!'
+        teardown = brightness_50 + '&' + contrast_50
+        configer.set(teardown)
+
+    request.addfinalizer(restore_brightness_contrast)
+    setup = brightness_100 + '&' + contrast_0
+    configer.set(setup)
