@@ -255,3 +255,20 @@ def test_snapshot_eptz_affect_snapshot(cam, configer, snapshot):
     assert ssim_exact < upper_bound, \
         "SSIM too high, Image may not been zoomed. Exp %f, Act %f" % \
         (upper_bound, ssim_exact)
+
+
+def test_snapshot_ocr(configer, snapshot, request):
+
+    configer.set('videoin_c0_imprinttimestamp=1')
+
+    # Test if text on video is working by enable/disable imprint text
+    def fin():
+        configer.set('videoin_c0_imprinttimestamp=0')
+    request.addfinalizer(fin)
+
+    from YNM.camera.service.snapshot import text_on_video
+    _, i = snapshot.take()
+
+    text = text_on_video(i)
+    print 'text is %s ' % text
+    assert text != "", "Expect something apperas in streaming when text on video is enabled"
