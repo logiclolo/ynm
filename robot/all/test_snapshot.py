@@ -304,4 +304,18 @@ def test_snapshot_ocr(cam, configer, snapshot, request,
             pattern = "%s[ ]*\d\d\d\d.\d\d.\d\d[ ]*\d\d.\d\d.\d\d" % video_title
             match = re.search(pattern, text)
             print 'text is "%s" ' % text
+
             assert match, "Expect something apperas in streaming when text on video is enabled"
+
+
+def test_snapshot_ocr_disabled(cam, configer, snapshot, request,
+                               brightness100_contrast50):
+
+    # disable text on video to see if it does disappear
+    configer.set('videoin_c0_imprinttimestamp=0&videoin_c0_text=')
+
+    param = {'resolution': '1024x768', 'quality': '5', 'streamid': '0'}
+    _, image = snapshot.take(param)
+    text = text_from_image(image.crop((0, 0, 640, 80)))
+
+    assert text == "", "Text on video should NOT appear"
