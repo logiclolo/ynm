@@ -3,7 +3,7 @@ function detect_ynm_path ()
 	local ynm_path=""
 	while [ 1 ] ; do
 		if [ $PWD != "/" ] ; then
-			if [ ! -f "$PWD/ynm.py" ] ; then
+			if [ ! -f "$PWD/source-me" ] ; then
 				cd ..
 			else
 				ynm_path=$PWD
