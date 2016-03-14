@@ -57,3 +57,32 @@ def test_all_audio_codec_bitrate_change_and_match(streaming, configer):
             continue  # currently only g711 bitrate is not configurable
         helper_general_codec_bitrate_change_and_match(streaming, configer,
                                                       codec, bitrates)
+
+
+@pytest.mark.audio
+def test_audio_codec_c0_s0_change_ok(cam, streaming, configer):
+
+    # Test if camera is able to change audio codec
+
+    if cam.capability.naudioin < 1:
+        pytest.skip("This device doesn't support audio, skip this test")
+
+    configer.set('audioin_c0_mute=0')
+
+    supported_codecs = cam.capability.audioin.codec
+
+    for codec in supported_codecs:
+        configer.set('audioin_c0_s0_codectype=%s' % codec)
+        codec_filter = CodecFilter(codec)
+        time.sleep(4)
+        streaming.connect()
+        count = 0
+        for frame_count in range(0, 30):
+            f = streaming.get_one_frame(audio_filter)
+            print f
+            count += 1
+            assert codec_filter.filter(f), "Codec change failed. Expected %s,\
+                actual %s" % (codec, f.codec)
+        streaming.disconnect()
+
+
