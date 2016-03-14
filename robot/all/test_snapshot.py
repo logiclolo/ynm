@@ -45,7 +45,7 @@ def test_snapshot_ok(snapshot):
 
 def test_snapshot_rotate_with_resolution_check(cam, snapshot, configer):
 
-    # Test if snapshot also rotates with camera. Note that some of camera which
+    # Test if snapshot also rotates with camera.  Note that some of camera which
     # doesn't support snapshot rotation will fail on this case
 
     if cam.capability.videoin.c[0].rotation == 0:
@@ -311,7 +311,8 @@ def test_snapshot_ocr(cam, configer, snapshot, request,
 def test_snapshot_ocr_disabled(cam, configer, snapshot, request,
                                brightness100_contrast50):
 
-    # disable text on video to see if it does disappear
+    # Test disable text on video to see if it DOES disappear
+
     configer.set('videoin_c0_imprinttimestamp=0&videoin_c0_text=')
 
     param = {'resolution': '1024x768', 'quality': '5', 'streamid': '0'}
