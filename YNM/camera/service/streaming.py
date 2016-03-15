@@ -109,8 +109,9 @@ class DataBrokerStreaming (IStreaming):
 
             frame_count += 1
             if frame_count >= frameout:
-                raise NoFramesPassFilterTimeout("%d frame got, but no frame\
-                                                passed" % frameout)
+                print "Last Frame %s" % frame_to_get
+                raise NoFramesPassFilterTimeout("%d frame got, but no frame"
+                                                "passed" % frameout)
             if custom_filter is None or custom_filter.filter(frame_to_get) is True:
                 filtered = True
 
