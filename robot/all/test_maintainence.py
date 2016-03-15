@@ -7,31 +7,40 @@ from YNM.camera.discovery import wait_to_http_rechable, wait_to_http_unrechable
 from textwrap import wrap
 
 
-@pytest.mark.skipif(True, reason="This test case has not been implemented"
-                    "correctly, skip this test")
 @pytest.mark.reboot
 @pytest.mark.slow
-def test_firmware_upgrade(cam, configer):
+def test_firmware_upgrade(cam, configer, configs):
 
     # Test if camera is able to upgrade firmware
+
+    platform = configs['platform']
+
+    supported_dailybuilds = [
+        'hisillicon-standard',
+        'hissilicon-speeddome',
+        'rossini-standard'
+    ]
+    if platform not in supported_dailybuilds:
+        pytest.skip("We don't have %s daily build right now" % platform)
 
     c = configer.get('system_info_serialnumber')
     macaddress = c.system.info.serialnumber
     macaddress = ':'.join(wrap(macaddress, 2))
 
-    r = cam.upgrade('http://rd1-3/~klaymen.chang/latest.pkg')
+    r = cam.upgrade('http://rd1-ci1.vivotek.tw/~ci/%s/latest.pkg' % platform)
     if r is not None:
         print r.text
 
+    upgrade_success = False
     for i in range(0, 3):
         d = DRM()
         d.refresh()
         if len(d.search(macaddress)) > 0:
-            break
+            upgrade_success = True
         else:
             sleep(60)
 
-    assert False, "Camera (%s) missing after firmware upgrade" % macaddress
+    assert upgrade_success, "Camera (%s) missing after firmware upgrade" % macaddress
 
 
 @pytest.mark.slow
