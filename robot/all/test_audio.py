@@ -74,7 +74,7 @@ def test_audio_codec_c0_s0_change_ok(cam, streaming, configer):
     for codec in supported_codecs:
         configer.set('audioin_c0_s0_codectype=%s' % codec)
         codec_filter = CodecFilter(codec)
-        time.sleep(4)
+        sleep(4)
         streaming.connect()
         count = 0
         for frame_count in range(0, 30):
