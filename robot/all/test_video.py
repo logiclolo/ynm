@@ -403,3 +403,54 @@ def test_fps_with_wdr_on_ok(cam, configer, streaming, request):
     max_fps, measure = fps_helper(cam, configer, streaming)
     assert float(max_fps) * 0.9 <= float(measure.fps), "FPS too low. Exp %d, Act\
         %d" % (max_fps, measure.fps)
+
+
+@pytest.skipif(True, reason="Skip this test right now")
+@pytest.mark.video
+def test_video_bitrate(cam, configer, streaming, request):
+
+    def helper_test_video_bitrate(ch, stream, codec, bitrate):
+        config_bitrate = 'videoin_c%d_s%d_%s_bitrate=%d' % (ch, stream, codec,
+                                                            bitrate)
+        config_codec = 'videoin_c%d_s%d_codectype=%s' % (ch, stream, codec)
+        configer.set(config_bitrate + '&' + config_codec)
+        streaming.connect()
+        streaming.setprofile('%s' % stream)
+        video = Filter('video')
+        measure = Filter('measure')
+        video_measure = video + measure
+        # measure bitrate for 300 frames
+        for idx in range(0, 300):
+            f = streaming.get_one_frame(video_measure)
+            print f
+
+        lower_bound = float(bitrate) * 0.9
+        upper_bound = float(bitrate) * 1.1
+        print 'measure bitrate %f' % float(measure.bitrate)
+
+        assert lower_bound <= measure.bitrate <= upper_bound, \
+            "Bitrate range mismatchm exp %f <= %f <= %f" % (lower_bound,
+                                                            measure.bitrate,
+                                                            upper_bound)
+
+        streaming.disconnect()
+
+    # Test various bitrate
+
+    # This list is copied from firmware drop list
+#     bitrates = [40000000, 36000000, 32000000, 28000000, 24000000, 20000000,
+#                 18000000, 16000000, 14000000, 12000000, 10000000, 8000000,
+#                 6000000, 4000000, 3000000, 2000000, 1000000, 768000, 512000,
+#                 256000, 128000, 64000, 50000, 40000, 30000, 20000]
+
+    bitrates = [8000000, 6000000, 4000000, 3000000, 2000000, 1000000]
+
+    supported_codecs = cam.capability.videoin.codec
+    supported_streams = cam.capability.nmediastream
+    supported_channels = cam.capability.nvideoin
+
+    for ch in range(0, supported_channels):
+        for stream in range(0, supported_streams):
+            for codec in supported_codecs:
+                for bitrate in bitrates:
+                    helper_test_video_bitrate(ch, stream, codec, bitrate)
