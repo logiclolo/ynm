@@ -99,7 +99,6 @@ def test_system_ircut_schedule_mode(configer, cam, snapshot, request):
     print "IRCut enters NIGHT mode ok"
 
     schedule_entered = False
-    print ""
     for i in range(0, 60):
         c = configer.get('system')
         hour, minute, second = c.system.time.split(':')
