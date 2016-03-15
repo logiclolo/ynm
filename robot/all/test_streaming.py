@@ -169,9 +169,9 @@ class StreamLoop(Thread):
     def run(self):
         handle = self._handle
         stream_idx = self._stream_idx
+        handle.connect()
         handle.setprofile(stream_idx)
         time.sleep(2)
-        handle.connect()
         for i in range(0, 300):
             f = handle.get_one_frame()
             print "<%d> %s" % (stream_idx, f)
