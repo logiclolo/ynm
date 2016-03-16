@@ -405,7 +405,7 @@ def test_fps_with_wdr_on_ok(cam, configer, streaming, request):
         %d" % (max_fps, measure.fps)
 
 
-@pytest.skipif(True, reason="Skip this test right now")
+@pytest.mark.skipif(True, reason="Skip this test right now")
 @pytest.mark.video
 def test_video_bitrate(cam, configer, streaming, request):
 
