@@ -166,21 +166,24 @@ def test_video_codec_c0_s0_change_ok(cam, streaming, configer):
 
     supported_codecs = cam.capability.videoin.codec
 
+    f = None
+    codec_change_success = False
     for codec in supported_codecs:
         configer.set('videoin_c0_s0_codectype=%s' % codec)
         codec_filter = CodecFilter(codec)
         time.sleep(5)
         streaming.connect()
-        count = 0
-        for frame_count in range(0, 30):
+        # wait 60 frames for codec to change
+        for frame_count in range(0, 60):
             f = streaming.get_one_frame(video_filter)
             print f
-            count += 1
-            assert codec_filter.filter(f) is True, "Codec change failed.\
-                Expected %s, actual %s" % (codec, f.codec)
+            if codec_filter.filter(f) is True:
+                codec_change_success = True
+                break
 
         streaming.disconnect()
 
+    assert codec_change_success, "Codec change failed. Expected %s, actual %s" % (codec, f.codec)
 
 """ change codec at once """
 from threading import Thread
