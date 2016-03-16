@@ -412,21 +412,25 @@ def test_fps_with_wdr_on_ok(cam, configer, streaming, request):
 @pytest.mark.video
 def test_video_bitrate(cam, configer, streaming, request):
 
+    # Test video bitrate
+
     def helper_test_video_bitrate(ch, stream, codec, bitrate):
-        config_bitrate = 'videoin_c%d_s%d_%s_bitrate=%d' % (ch, stream, codec,
-                                                            bitrate)
-        config_codec = 'videoin_c%d_s%d_codectype=%s' % (ch, stream, codec)
-        configer.set(config_bitrate + '&' + config_codec)
+        config = 'videoin_c%d_s%d_%s_bitrate=%d' % (ch, stream, codec, bitrate)
+        config += '&videoin_c%d_s%d_codectype=%s' % (ch, stream, codec)
+        configer.set(config)
         streaming.connect()
-        streaming.setprofile('%s' % stream)
+        streaming.setprofile(stream)
+        time.sleep(2)
         video = Filter('video')
         measure = Filter('measure')
         video_measure = video + measure
+
         # measure bitrate for 300 frames
         for idx in range(0, 300):
             f = streaming.get_one_frame(video_measure)
             print f
 
+        streaming.disconnect()
         lower_bound = float(bitrate) * 0.9
         upper_bound = float(bitrate) * 1.1
         print 'measure bitrate %f' % float(measure.bitrate)
@@ -435,10 +439,6 @@ def test_video_bitrate(cam, configer, streaming, request):
             "Bitrate range mismatchm exp %f <= %f <= %f" % (lower_bound,
                                                             measure.bitrate,
                                                             upper_bound)
-
-        streaming.disconnect()
-
-    # Test various bitrate
 
     # This list is copied from firmware drop list
 #     bitrates = [40000000, 36000000, 32000000, 28000000, 24000000, 20000000,
