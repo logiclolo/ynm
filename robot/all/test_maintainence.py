@@ -7,6 +7,7 @@ from YNM.camera.discovery import wait_to_http_rechable, wait_to_http_unrechable
 from textwrap import wrap
 
 
+@pytest.mark.upgrade
 @pytest.mark.reboot
 @pytest.mark.slow
 def test_firmware_upgrade(cam, configer, configs):
@@ -138,6 +139,7 @@ def test_system_restore_except_custom(cam):
     pass
 
 
+@pytest.mark.slow
 @pytest.mark.reboot
 def test_system_reboot(cam, configer, configs):
 

@@ -68,7 +68,7 @@ def test_videotimestamp_should_not_rollback(streaming):
         decrease_catcher.catch(f)
 
 
-def test_timestamp_rotate_streamimg_ok(cam, configer, streaming):
+def test_timestamp_rotate_streaming_ok(cam, configer, streaming):
 
     # Test streaming ok when streaming rotated
 

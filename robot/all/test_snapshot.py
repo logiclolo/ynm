@@ -266,10 +266,12 @@ def test_snapshot_ocr(cam, configer, snapshot, request,
     #   b) rotate 90, 270
     #   c) each stream
 
+    # 這個 test case 有可能產生 Fail.  參數可能仍還需要調整
     # Technical detail: This test case uses tesseract OCR to recognize text on
     # video content.  tesseract recognizes text in unicode. But unicode stores
     # variations, especailly symbols.  Try only to use a-z0-9 in video title to
     # prevent error
+
     video_title = 'ynmtest'
     configer.set('videoin_c0_imprinttimestamp=1&videoin_c0_text=%s' %
                  video_title)
