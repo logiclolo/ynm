@@ -314,6 +314,7 @@ def test_snapshot_ocr_disabled(cam, configer, snapshot, request,
     # Test disable text on video to see if it DOES disappear
 
     configer.set('videoin_c0_imprinttimestamp=0&videoin_c0_text=')
+    sleep(2)
 
     param = {'resolution': '1024x768', 'quality': '5', 'streamid': '0'}
     _, image = snapshot.take(param)
