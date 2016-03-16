@@ -11,8 +11,8 @@ def test_all_audio_codec_bitrate_change_and_match(streaming, configer):
     # Test camera bitrate by ALL audio codec type that could be changed
     # successfully and match expected bitrate
 
-    def helper_general_codec_bitrate_change_and_match(streaming,
-                                                    configer, codec, bitrates):
+    def helper_general_codec_bitrate_change_and_match(streaming, configer,
+                                                      codec, bitrates):
         supported_bitrates = bitrates
 
         # enable audio and set codec type
@@ -36,9 +36,9 @@ def test_all_audio_codec_bitrate_change_and_match(streaming, configer):
             rate_config = float(bitrate)
             rate_measure = float(measure.bitrate)
             assert rate_config * 0.95 <= rate_measure <= rate_config * 1.05, \
-                "%s audio bitrate doesn't match. Exp %d, Act %f" % (codec, bitrate,
+                "%s audio bitrate doesn't match. Exp %d, Act %f" % (codec,
+                                                                    bitrate,
                                                                     measure.bitrate)
-
             streaming.disconnect()
 
     codec_bitrates = {
