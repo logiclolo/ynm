@@ -11,6 +11,8 @@ def test_privacy_create_rectangle(snapshot, configer, cam, pmask, no_timestamp,
 
     # Test to create privacy masks. This test case will generate 5 masks, 4 for
     # corners, 1 for single center dart shape mask
+    # 目前準確度仍不夠高，需要一點時間調整參數。如果發現失敗有可能是 YNM
+    # 本身的問題
 
     def fin():
         helper_privacy_clear_all(configer, cam, pmask)
