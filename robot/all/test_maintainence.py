@@ -143,20 +143,22 @@ def test_system_reboot(cam, configer, configs):
 
     # Test to reboot camera and see if it is still reachable after reboot
 
-    configer.set('system_reboot=1')
-    sleep(3)
-
     c = configer.get('system&network')
     mac = c.system.info.serialnumber
     ip = c.network.ipaddress
+
+    configer.set('system_reboot=1')
+    sleep(3)
+
     if wait_to_http_rechable(ip):
         cam = Camera(configs)
         configer = Configer(cam)
         c = configer.get('system')
         if mac == c.system.info.serialnumber:
-            # device with same mac address found again
+            # device with same mac and IP address found again
             return
 
+    # device IP may be changed, use DRM to scan if device is working
     d = DRM()
     d.refresh()
 
