@@ -415,8 +415,17 @@ def test_video_bitrate(cam, configer, streaming, request):
     # Test video bitrate
 
     def helper_test_video_bitrate(ch, stream, codec, bitrate):
+        if codec == 'mjpeg':
+            return
+
         config = 'videoin_c%d_s%d_%s_bitrate=%d' % (ch, stream, codec, bitrate)
         config += '&videoin_c%d_s%d_codectype=%s' % (ch, stream, codec)
+        config += '&videoin_c%d_s%d_%s_ratecontrolmode=%s' % (ch, stream, codec,
+                                                              'cbr')
+        config += '&videoin_c%d_s%d_%s_dintraperiod_enable=0' % (ch, stream,
+                                                                 codec)
+        config += '&videoin_c%d_s%d_%s_cbr_quant=5'
+
         configer.set(config)
         streaming.connect()
         streaming.setprofile(stream)
@@ -431,14 +440,14 @@ def test_video_bitrate(cam, configer, streaming, request):
             print f
 
         streaming.disconnect()
-        lower_bound = float(bitrate) * 0.9
-        upper_bound = float(bitrate) * 1.1
+        lower_bound = float(bitrate) * 0.8
+        upper_bound = float(bitrate) * 1.2
         print 'measure bitrate %f' % float(measure.bitrate)
 
-        assert lower_bound <= measure.bitrate <= upper_bound, \
-            "Bitrate range mismatchm exp %f <= %f <= %f" % (lower_bound,
-                                                            measure.bitrate,
-                                                            upper_bound)
+        assert lower_bound <= float(measure.bitrate) <= upper_bound, \
+            "Bitrate range mismatch exp %f <= %f <= %f" % (lower_bound,
+                                                           measure.bitrate,
+                                                           upper_bound)
 
     # This list is copied from firmware drop list
 #     bitrates = [40000000, 36000000, 32000000, 28000000, 24000000, 20000000,
@@ -446,7 +455,7 @@ def test_video_bitrate(cam, configer, streaming, request):
 #                 6000000, 4000000, 3000000, 2000000, 1000000, 768000, 512000,
 #                 256000, 128000, 64000, 50000, 40000, 30000, 20000]
 
-    bitrates = [8000000, 6000000, 4000000, 3000000, 2000000, 1000000]
+    bitrates = [4000000, 3000000, 2000000, 1000000, 768000]
 
     supported_codecs = cam.capability.videoin.codec
     supported_streams = cam.capability.nmediastream
