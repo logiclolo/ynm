@@ -1,5 +1,5 @@
 #!/bin/sh
 
-source ./source-me
+source ../source-me
 
 ./ynm.py $@
