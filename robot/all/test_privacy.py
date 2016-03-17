@@ -64,7 +64,7 @@ def helper_generate_pmask_windows():
     wins.append(
         {'enable': '1',
          'name': 'ynm-star-0',
-         'polygon': [160, 90, 190, 150, 160, 120, 130, 150]})
+         'polygon': [160, 70, 260, 150, 160, 120, 60, 150]})
 
     return wins
 
@@ -110,9 +110,9 @@ def helper_privacy_rectangle_with_wins_rotate(snapshot, configer, cam, pmask,
         filtered_points = [elem for elem in original_points if elem not in
                            found_points]
 
-        assert not filtered_points, "%d privacy mask expected"
-        "(註：目前準確度仍不夠高，需要一點時間調整參數。如果發現失敗有可能是 YNM"
-        " 本身的問題）" % len(wins)
+        assert not filtered_points, "%d privacy mask expected"\
+            u"(註：目前準確度仍不夠高，需要一點時間調整參數。如果發現失敗有可能是 YNM"\
+            u" 本身的問題）" % len(wins)
 
     configer.set('videoin_c0_rotate=0')
 
