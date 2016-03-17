@@ -3,6 +3,15 @@
 source ../source-me
 export PYTHONPATH="$PYTHONPATH:$PWD/setup"
 
+if [ "$1" == "-h" ] ; then
+	echo -e "Usage:"
+	echo -e "  -m: python expression to run certain test cases which evalutes true."
+	echo -e "      For example, -m 'not restore' will select test cases which doesn't resotre camera"
+	echo -e "  -s: print captured test case output to stdout"
+	echo -e "  -v: verbose output"
+	exit
+fi
+
 if [ "$#" == "0" ] ; then
 	py.test all
 else
