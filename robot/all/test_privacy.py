@@ -11,8 +11,6 @@ def test_privacy_create_rectangle(snapshot, configer, cam, pmask, no_timestamp,
 
     # Test to create privacy masks. This test case will generate 5 masks, 4 for
     # corners, 1 for single center dart shape mask
-    # 目前準確度仍不夠高，需要一點時間調整參數。如果發現失敗有可能是 YNM
-    # 本身的問題
 
     def fin():
         helper_privacy_clear_all(configer, cam, pmask)
@@ -111,7 +109,10 @@ def helper_privacy_rectangle_with_wins_rotate(snapshot, configer, cam, pmask,
 
         filtered_points = [elem for elem in original_points if elem not in
                            found_points]
-        assert not filtered_points, "%d privacy mask expected" % len(wins)
+
+        assert not filtered_points, "%d privacy mask expected"
+        "(註：目前準確度仍不夠高，需要一點時間調整參數。如果發現失敗有可能是 YNM"
+        " 本身的問題）" % len(wins)
 
     configer.set('videoin_c0_rotate=0')
 
