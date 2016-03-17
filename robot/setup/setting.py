@@ -6,13 +6,13 @@ ip8155 = {
 }
 fd9371htv = {
     'mac': '00:02:D1:3C:91:6B',
-    'ip': '172.16.8.57',
+    'ip': '172.16.2.147',
     'user': 'root', 'passwd': '',
     'platform': 'hisillicon-standard'
 }
 ip9181 = {
     'mac': '00:02:FD:AA:13:26',
-    'ip': '172.16.2.147',
+    'ip': '172.16.2.146',
     'user': 'root', 'passwd': '',
     'platform': 'hisillicon-standard'
 }
@@ -23,4 +23,4 @@ vc8101 = {
     'platform': 'rossini-standard'
 }
 
-config = ip9181
+config = fd9371htv
