@@ -14,42 +14,55 @@ import setting
 
 @pytest.fixture(scope="session")
 def configs():
+    ''' Return DUT (Device Under Test) config '''
     return setting.config
 
 
 @pytest.fixture(scope="session")
 def cam(configs):
+    ''' Create camera object for you '''
     cam = Camera(configs)
     return cam
 
 
 @pytest.fixture
 def streaming(cam):
+    ''' Create streaming service for you'''
     return DataBrokerStreaming(cam)
 
 
 @pytest.fixture
 def snapshot(cam):
+    ''' Create snapshot service for you'''
     return Snapshot(cam)
 
 
 @pytest.fixture
 def configer(cam):
+    ''' Create configer service for you '''
     return Configer(cam)
 
 
 @pytest.fixture
 def ptz(cam):
+
+    ''' Create PTZ object for you '''
+
     return PTZ(cam)
 
 
 @pytest.fixture
 def motion(cam):
+
+    ''' Create motion object for you '''
+
     return Motion(cam)
 
 
 @pytest.fixture
 def cmosfreq_50hz_with_60hz_fin(cam, request, configer):
+
+    ''' Set CMOS freq to 50Mhz. Will auto change to 60Hz after test case '''
 
     def freq_change_generator(freq, maxfps):
         def changer():
@@ -61,8 +74,10 @@ def cmosfreq_50hz_with_60hz_fin(cam, request, configer):
             for channel in channels:
                 for stream in streams:
                     for codec in codecs:
-                        changeset += 'videoin_c%d_cmosfreq=%d&' % (channel, freq)
-                        changeset += 'videoin_c%d_s%d_%s_maxframe=%d&' % (channel, stream, codec, maxfps)
+                        changeset += 'videoin_c%d_cmosfreq=%d&' % (channel,
+                                                                   freq)
+                        changeset += 'videoin_c%d_s%d_%s_maxframe=%d&' % \
+                            (channel, stream, codec, maxfps)
 
             print 'changeset %s' % changeset
             configer.set(changeset)
@@ -80,21 +95,36 @@ def cmosfreq_50hz_with_60hz_fin(cam, request, configer):
 
 @pytest.fixture
 def orientation0_ch0(cam, configer):
+
+    ''' Set ch0 orientation to 0. Will NOT auto revert back to original
+    orientation. '''
+
     configer.set('videoin_c0_rotate=0')
 
 
 @pytest.fixture
 def orientation90_ch0(cam, configer):
+
+    ''' Set ch0 orientation to 90. Will NOT auto revert back to original
+    orientation. '''
+
     configer.set('videoin_c0_rotate=90')
 
 
 @pytest.fixture
 def pmask(cam, configer):
+
+    ''' Generate privacy object automatically for you. '''
+
     return Privacy(cam)
 
 
 @pytest.fixture
 def no_timestamp(configer, request):
+
+    ''' Turn off timesatmp. Useful for some OCR test case. Will auto revert back
+    to original after test '''
+
     def turn_on_timestamp():
         configer.set('videoin_c0_imprinttimestamp=1')
 
@@ -106,6 +136,11 @@ def no_timestamp(configer, request):
 
 @pytest.fixture
 def brightness100_contrast50(configer, request):
+
+    ''' Set brightness to 100 and contrast to 50. This will make some image
+    recognition more easily. Will auto revert back to brightness=0 contrast=50
+    after test case  '''
+
     brightness_100 = 'image_c0_brightnesspercent=100'
     brightness_50 = 'image_c0_brightnesspercent=50'
     contrast_0 = 'image_c0_contrastpercent=0'
