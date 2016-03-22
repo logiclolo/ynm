@@ -30,8 +30,9 @@ class DecodeStreaming(DataBrokerStreaming):
         else:
             self._decode_channel = \
                 avsync.create_decoder_channel(self._async_decode_cb)
-
-        self.count = 0
+            self._frame_buf = {}
+            self._frame_count = 0
+            self._decode_count = 0
 
     def _put_one_frame(self, context, media_data_packet):
         self._lock.acquire()
@@ -53,18 +54,20 @@ class DecodeStreaming(DataBrokerStreaming):
                         tInfo.bMotionDetectionAlertFlag,
                         tInfo.byMotionDetectionPercent,
                         tInfo.wMotionDetectionAxis)
-        self._f = Frame(sec, msec, size_in_bytes, str(codec), frame_type,
-                        width, height, m, v3_info.contents)
         if self.is_async_mode is False:
             avsync = self._avsync
             (rawdata, size) = avsync.decode_one_frame(
                 self._decode_channel, media_data_packet)
-            self._f.add_rawdata(rawdata, size)
-            self._frames.put(self._f)
-            self._f = None
+            f = Frame(sec, msec, size_in_bytes, str(codec), frame_type,
+                      width, height, m, v3_info.contents, rawdata, size)
+            self._frames.put(f)
             self._lock.release()
         else:
             avsync = self._avsync
+            f = Frame(sec, msec, size_in_bytes, str(codec), frame_type,
+                      width, height, m, v3_info.contents)
+            self._frame_buf.update({self._frame_count: f})
+            self._frame_count += 1
             self._lock.release()
             avsync.input_frame_to_decode(self._decode_channel,
                                          media_data_packet)
@@ -88,12 +91,13 @@ class DecodeStreaming(DataBrokerStreaming):
             data = info.tAudioFrame.pbySound
             size = info.tAudioFrame.dwSize
 
-        if self._f is not None:
-            buf = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte * size))
-            rawdata = ''.join(map(chr, buf.contents))
-            self._f.add_rawdata(rawdata, size)
-            self._frames.put(self._f)
-            self._f = None
+        buf = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte * size))
+        rawdata = ''.join(map(chr, buf.contents))
+        f = self._frame_buf[self._decode_count]
+        f.add_rawdata(rawdata, size)
+        self._frames.put(f)
+        self._frame_buf.pop(self._decode_count, None)
+        self._decode_count += 1
         self._lock.release()
         return 0
 
@@ -106,3 +110,8 @@ class DecodeStreaming(DataBrokerStreaming):
     def disconnect(self):
         super(DecodeStreaming, self).disconnect()
         self._avsync.delete_decoder_channel(self._decode_channel)
+        if self.is_async_mode is True:
+            self._frame_buf = None
+            self._frame_count = 0
+            self._decode_count = 0
+            self.is_async_mode = None

@@ -21,7 +21,7 @@ audio/video/metadata
 class Frame (object):
 
     def __init__(self, sec, msec, size_in_bytes, codec, type, width, height,
-                 motion, extension):
+                 motion, extension, rawdata=None, size=None):
         self.time = datetime.datetime.utcfromtimestamp(sec)
         self.time += datetime.timedelta(milliseconds=msec)
         self.size_in_bytes = size_in_bytes
@@ -29,6 +29,8 @@ class Frame (object):
         self.height = height
         self.motion = motion
         self.extension = extension
+        self.rawdata = rawdata
+        self.raw_size = size
 
         # following variables should use enum to implement
         self.codec = codec
