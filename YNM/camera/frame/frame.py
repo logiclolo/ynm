@@ -71,3 +71,7 @@ class Frame (object):
     """ Use `is_meta()` to determine if this frame is meta frame"""
     def is_meta(self):
         raise NotImplemented()
+
+    def add_rawdata(self, rawdata, size):
+        self.rawdata = rawdata
+        self.raw_size = size

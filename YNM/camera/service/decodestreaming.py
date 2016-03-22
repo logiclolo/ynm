@@ -18,17 +18,23 @@ class DecodeStreaming(DataBrokerStreaming):
         cb = avcallback(self._update_decode_status_cb, self._display_cb)
         self._avsync = avsynchelper(cb)
 
-    def connect(self):
+    def connect(self, async=True):
         super(DecodeStreaming, self).connect()
+        self.is_async_mode = async
+
         # create decode_channel
         avsync = self._avsync
-        self._decode_channel = avsync.create_decoder_channel()
+        if self.is_async_mode is False:
+            raise NotImplementedError
+            self._decode_channel = avsync.create_decoder_channel()
+        else:
+            self._decode_channel = \
+                avsync.create_decoder_channel(self._async_decode_cb)
+
         self.count = 0
 
     def _put_one_frame(self, context, media_data_packet):
-
         self._lock.acquire()
-        self.count += 1
 
         v3_info = ctypes.cast(
             media_data_packet,
@@ -47,13 +53,47 @@ class DecodeStreaming(DataBrokerStreaming):
                         tInfo.bMotionDetectionAlertFlag,
                         tInfo.byMotionDetectionPercent,
                         tInfo.wMotionDetectionAxis)
+        self._f = Frame(sec, msec, size_in_bytes, str(codec), frame_type,
+                        width, height, m, v3_info.contents)
+        if self.is_async_mode is False:
+            avsync = self._avsync
+            (rawdata, size) = avsync.decode_one_frame(
+                self._decode_channel, media_data_packet)
+            self._f.add_rawdata(rawdata, size)
+            self._frames.put(self._f)
+            self._f = None
+            self._lock.release()
+        else:
+            avsync = self._avsync
+            self._lock.release()
+            avsync.input_frame_to_decode(self._decode_channel,
+                                         media_data_packet)
+            # postpone put one frame in this mode,
+            # due to decoding process at function _async_decode_cb
 
-        avsync = self._avsync
-        (rawdata, raw_size) = avsync.decode_one_frame(
-            self._decode_channel, media_data_packet)
-        f = Frame(sec, msec, size_in_bytes, str(codec), frame_type, width,
-                  height, m, v3_info.contents)
-        self._frames.put(f)
+        return 0
+
+    def _async_decode_cb(self, context, tFrameType, tFrameInfo):
+        self._lock.acquire()
+        info = ctypes.cast(
+            tFrameInfo, ctypes.POINTER(avsynchelper.TFRAMEINFO)).contents
+
+        if avsynchelper.TMediaType.AVSYNCHRONIZER_MEDIATYPE_VIDEO_ONLY.value \
+                == tFrameType:
+            data = info.tVideoFrame.pbyPicture
+            size = info.tVideoFrame.dwSize
+
+        if avsynchelper.TMediaType.AVSYNCHRONIZER_MEDIATYPE_AUDIO_ONLY.value \
+                == tFrameType:
+            data = info.tAudioFrame.pbySound
+            size = info.tAudioFrame.dwSize
+
+        if self._f is not None:
+            buf = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte * size))
+            rawdata = ''.join(map(chr, buf.contents))
+            self._f.add_rawdata(rawdata, size)
+            self._frames.put(self._f)
+            self._f = None
         self._lock.release()
         return 0
 

@@ -10,9 +10,10 @@ from logging import info
 
 
 class AvSyncCallback(object):
-    def __init__(self, on_status, on_display):
+    def __init__(self, on_status, on_display, decode=None):
         self.on_status = on_status
         self.on_display = on_display
+        self.decode = decode
 
 
 class AvSyncHelper(object):
@@ -83,7 +84,7 @@ class AvSyncHelper(object):
         if utility.is_fail(ret) == 1:
             raise LoadLibError
 
-    def create_decoder_channel(self):
+    def create_decoder_channel(self, cb=None):
         ''' Create Decorder channel '''
 
         AvSynchronizer_CreateDecoderChannel = \
@@ -99,7 +100,10 @@ class AvSyncHelper(object):
         decode_handle = ctypes.c_void_p()
         dec_ch_options = TDECHOPTION()
         dec_ch_options.dwRawDataFormat = EPIXELFORMAT.PF_YUV
-
+        if cb is not None:
+            self.__callback.decode = FTLPDecordeFrameCallback(cb)
+            dec_ch_options.pfDecodeFrame = \
+                self.__callback.decode
         ret = AvSynchronizer_CreateDecoderChannel(
             self.__handle, ctypes.byref(decode_handle),
             ctypes.byref(dec_ch_options))
@@ -108,6 +112,34 @@ class AvSyncHelper(object):
             raise AVSyncCreateDecoderError(
                 'AvSynchronizer_CreateDecoderChannel fail')
         return decode_handle
+
+    def set_decoder_channel_option(self):
+        # TODO
+        AvSynchronizer_SetChannelOption = \
+            self.__avsync.AvSynchronizer_SetChannelOption
+        # Set the argtypes.
+        AvSynchronizer_SetChannelOption.argtypes = [
+            ctypes.c_void_p,
+        ]
+
+        # Invoke API AvSynchronizer_SetChannelOption
+
+    # for async mode
+    def input_frame_to_decode(self, decode_handle, media_data_packet):
+        info = ctypes.cast(
+            media_data_packet,
+            ctypes.POINTER(TMediaDataPacketInfo))
+
+        AvSynchronizer_InputToBeDecodedMediaFrame = \
+            self.__avsync.AvSynchronizer_InputToBeDecodedMediaFrame
+        # Set the argtypes.
+        AvSynchronizer_InputToBeDecodedMediaFrame.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(TMediaDataPacketInfo)
+        ]
+
+        # Invoke API AvSynchronizer_CreateDecoderChannel
+        AvSynchronizer_InputToBeDecodedMediaFrame(decode_handle, info)
 
     def decode_one_frame(self, decode_handle, media_data_packet):
 

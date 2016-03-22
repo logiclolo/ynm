@@ -10,6 +10,12 @@ class TAudioFocusType(CtypesEnum):
     AUDIOOUT_FOCUS_GLOBAL = 3,
 
 
+class TMediaType(CtypesEnum):
+    AVSYNCHRONIZER_MEDIATYPE_VIDEO_ONLY = 0x0001,
+    AVSYNCHRONIZER_MEDIATYPE_AUDIO_ONLY = 0x0002,
+    AVSYNCHRONIZER_MEDIATYPE_AUDIO_VIDEO = 0x0003,
+
+
 class EPIXELFORMAT(CtypesEnum):
     PF_YUY2 = 1,
     PF_RGB16565 = 2,
@@ -69,7 +75,9 @@ class TFRAMEINFO(ctypes.Structure):
 typedef SCODE (__stdcall * LPDECODEFRAMECALLBACK)
 (DWORD_PTR dwContext, EMEDIATYPE tFrameType, TFRAMEINFO * tframeinfo );
 '''
-FTLPDecordeFrameCallback = ctypes.CFUNCTYPE(ctypes.c_ulong, ctypes.c_ulong,
+FTLPDecordeFrameCallback = ctypes.CFUNCTYPE(ctypes.c_ulong,
+                                            ctypes.c_ulong,
+                                            ctypes.c_ulong,
                                             ctypes.POINTER(TFRAMEINFO))
 
 FTLPDisplayCallBack = ctypes.CFUNCTYPE(ctypes.c_ulong, ctypes.c_ulong,
