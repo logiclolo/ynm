@@ -66,3 +66,7 @@ class ApplicationDataCompareFailed(Exception):
 
 class InvalidExtData(Exception):
     pass
+
+
+class LoadLibError(Exception):
+    pass
