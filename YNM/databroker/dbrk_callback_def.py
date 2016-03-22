@@ -5,7 +5,7 @@ from ctypes import *
 
 # --- enumeration for TDataBrokerStatusType --- #
 # This enumeration indicates the status of DataBroker
-class TDataBrokerStatusType(Enum4ctypes):
+class TDataBrokerStatusType(CtypesEnum):
     (eOnConnectionInfo,             # Indicate connection info when connecting to the server
      eOnAuthFailed,                 # Can not pass the authorization of server
      eOnStartMediaChannel,          # Begin to receive media stream

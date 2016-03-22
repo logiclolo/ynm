@@ -2,7 +2,7 @@
 
 import ctypes
 import platform
-from enum import Enum,IntEnum;
+from enum import IntEnum
 import ctypes
 
 
@@ -45,16 +45,17 @@ def get_buffer_data(pointer_to_byte, size, offset=0):
     # debug_log("~~~ strbuffer: %s" % str_buffer[:size], "info")
     return str_buffer[:size]
 
-class Enum4ctypes(Enum):
+
+class CtypesEnum(IntEnum):
     def __init(self, value):
-        self._as_parameter = value
+        self._as_parameter_ = int(value)
 
     @classmethod
-    def from_param(cls,obj):
+    def from_param(cls, obj):
         return int(obj)
 
 
-def merge_dict (a, b):
+def merge_dict(a, b):
     c = a.copy()
     c.update(b)
     return c
