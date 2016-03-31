@@ -285,10 +285,14 @@ class EdgeRecording (IStorage, IHealth):
         if 'triggertype' in criteria:
             if 'backup' in criteria['triggertype']:
                 criteria['backup'] = 1
-        if criteria['mediatype'] == 'videoclip':
-            return self._nativeapi_search(criteria)
-        else:
-            return self._legacy_search(criteria)
+        try:
+            if criteria['mediatype'] == 'videoclip':
+                return self._nativeapi_search(criteria)
+            else:
+                return self._legacy_search(criteria)
+        except:
+            assert False, "must have mediatype, \
+                such as videoclip, snapshot, text"
 
     def get_slices(self, xml_obj):
         slices = dict()
@@ -298,7 +302,7 @@ class EdgeRecording (IStorage, IHealth):
                 slice = dict()
                 for et in child:
                     if et.tag == 'sliceStart' or et.tag == 'sliceEnd':
-                        if et.text == None:
+                        if et.text is None:
                             xmltree.dump(et)
                         slice.update({et.tag: time_convert(et.text)})
                     else:
@@ -311,8 +315,8 @@ class EdgeRecording (IStorage, IHealth):
                 files = self._get_files(slice, mediaType='videoclip')
                 slice.update({'files': files})
 
-            slices.update({idx: slice})
-            idx += 1
+                slices.update({idx: slice})
+                idx += 1
         return slices
 
     def _get_files(self, slice, mediaType="all"):
