@@ -3,21 +3,47 @@
 import abc
 import requests
 import re
-from datetime import datetime
+from enum import Enum
+from datetime import datetime, timedelta
+# from YNM.utility import utility
+from pprint import pprint
 import xml.etree.ElementTree as xmltree
 
 
-def time_convert(timestr):
+class Tranfer(Enum):
+    Undo = 0,
+    ToUtc = 1,
+    ToLocal = 2
 
-    if type(timestr) is datetime or timestr is None:
+
+# return datetime format
+def time_convert(timestr, flag=Tranfer.Undo):
+
+    if timestr is None:
         return timestr
 
-    timestr = timestr.replace('T', ' ')
     is_utc = 0
-    if re.search('Z', timestr) is not None:
-        is_utc = 1
-        timestr = timestr.replace('Z', '')
-    return datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S.%f')
+    if type(timestr) is datetime:
+        time = timestr
+        if time.tzinfo is None:
+            is_utc = 1
+    else:
+        timestr = timestr.replace('T', ' ')
+        if re.search('Z', timestr) is not None:
+            is_utc = 1
+            timestr = timestr.replace('Z', '')
+        time = datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S.%f')
+
+    # workaround ( hard code tz): + 8
+    if is_utc:
+        if flag == Tranfer.ToLocal:
+            time = time + timedelta(hours=8)
+    else:
+        if flag == Tranfer.ToUtc:
+            time = time + timedelta(hours=-8)
+
+    time = time.replace(tzinfo=None)
+    return time
 
 
 class IHealth(object):
@@ -221,9 +247,11 @@ class EdgeRecording (IStorage, IHealth):
         self._filesystem = r.content.strip()
 
     def _nativeapi_search(self, criteria):
+        starttime = time_convert(criteria['starttime'], Tranfer.ToUtc)
+        endtime = time_convert(criteria['endtime'], Tranfer.ToUtc)
         command = {'cmd': 'getSlices',
-                   'recStartTime': criteria['starttime'],
-                   'recEndTime': criteria['endtime']}
+                   'recStartTime': starttime.isoformat(),
+                   'recEndTime': endtime.isoformat()}
         if 'triggertype' in criteria:
             command.update({'triggerType': ','.join(criteria['triggertype'])})
 
@@ -312,14 +340,15 @@ class EdgeRecording (IStorage, IHealth):
                 tracks = self._get_tracks(slice)
                 slice.update({'tracks': tracks})
                 # append files information
-                files = self._get_files(slice, mediaType='videoclip')
+                files = self._get_files(slice,
+                                        mediaType='videoclip', is_utc=True)
                 slice.update({'files': files})
 
                 slices.update({idx: slice})
                 idx += 1
         return slices
 
-    def _get_files(self, slice, mediaType="all"):
+    def _get_files(self, slice, mediaType="all", is_utc=False):
 
         slice['sliceStart'] = time_convert(slice['sliceStart'])
         slice['sliceEnd'] = time_convert(slice['sliceEnd'])
@@ -337,8 +366,13 @@ class EdgeRecording (IStorage, IHealth):
             timeinterval = "BETWEEN '" + slice['sliceStart'].isoformat() + \
                            "' AND '" + slice['sliceEnd'].isoformat() + "'"
             command.update({'triggerTime': timeinterval})
+
+        if is_utc == True:
+            command.update({'isUTC': 1})
+
         r = requests.get(self._legacycgi, params=command, auth=self._auth)
         x = xmltree.fromstring(r.content)
+
         files = []
         for idx in range(0, int(x.find('counts').text)):
             info = x.find('i' + str(idx))

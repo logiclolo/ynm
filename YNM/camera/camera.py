@@ -4,6 +4,7 @@ import requests
 import sys
 import YNM.camera.service.config as config
 import StringIO
+from datetime import datetime, timedelta, tzinfo
 
 """Camera is an abstraction of a IP camera.
 
@@ -19,6 +20,14 @@ determine camera further parameters.  You can also call ```probe()``` later one
 to get these information again
 
 """
+
+
+class CST(tzinfo):
+    def utcoffset(self, dt):
+        return timedelta(hours=8)
+
+    def tzname(self, dt):
+        return "GMT+8"
 
 
 class NoDeviceWithMACError(Exception):
@@ -111,3 +120,15 @@ class Camera:
         r = requests.post(upgrade_url, files={'file': firmware})
 
         return r
+
+    def get_time(self, configer):
+        try:
+           c = configer.get("system_date&system_time")
+        except Exception as e:
+            raise Exception(e)
+
+        timestr = c.system.date + 'T' + c.system.time
+        time = datetime.strptime(timestr, '%Y/%m/%dT%H:%M:%S')
+
+        # FIXME : assume tz of camera is GMT+8
+        return time.replace(tzinfo=CST())
