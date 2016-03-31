@@ -8,7 +8,11 @@ import mock
 def test_edge_recording_status(cam):
     mget = mock.MagicMock()
     response = mock.MagicMock()
-    response.content = '<?xml version="1.0" encoding="ISO-8859-1"?><stormgr version="1.0.9.20"><disk><i0><cond>detached</cond><dbcond>notready</dbcond><totalsize>0</totalsize><freespace>0</freespace><usedspace>0</usedspace></i0></disk><statusCode>200</statusCode><statusString>OK</statusString></stormgr>'
+    response.content = '<?xml version="1.0" encoding="ISO-8859-1"?>\
+        <stormgr version="1.0.9.20"><disk><i0><cond>detached</cond>\
+        <dbcond>notready</dbcond><totalsize>0</totalsize>\
+        <freespace>0</freespace><usedspace>0</usedspace></i0></disk>\
+        <statusCode>200</statusCode><statusString>OK</statusString></stormgr>'
     response.status_code = 200
     mget.return_value = response
     p1 = mock.patch('requests.get', new=mget)
