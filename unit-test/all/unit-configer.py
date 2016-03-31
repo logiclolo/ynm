@@ -80,20 +80,20 @@ def test_configer_set_ok():
     cam = mock.MagicMock()
     mset = mock.MagicMock()
 
-    p1 = mock.patch('requests.get', new=mset)
-    p1.start()
-
     config = Configer(cam)
 
+    url = 'http://' + cam.url + config.admin.set
+    command = "&videoin_c0_s0_resolution=800x600&videoin_c0_s1_enableeptz=1"
     mset.return_value.status_code = 200
-    mset.return_value.text = "videoin_c0_s0_resolution='800x600'\r\n \
-        videoin_c0_s1.enableeptz='1'\r\n"
-    # url = 'http://' + cam.url + config.admin.set
+
+    p1 = mock.patch('requests.get', new=mset)
+    p1.start()
 
     # set method: set by dict
     conf = Config()
     conf.videoin.c[0].s[0].resolution = '800x600'
     conf.videoin.c0.s1.enableeptz = '1'
     config.set(conf)
+    mset.assert_called_once_with(url, params=command, auth=config._auth)
 
     p1.stop()
