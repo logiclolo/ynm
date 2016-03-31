@@ -313,14 +313,14 @@ class EdgeRecording (IStorage, IHealth):
         if 'triggertype' in criteria:
             if 'backup' in criteria['triggertype']:
                 criteria['backup'] = 1
-        try:
-            if criteria['mediatype'] == 'videoclip':
-                return self._nativeapi_search(criteria)
-            else:
-                return self._legacy_search(criteria)
-        except:
+        if 'mediatype' not in criteria:
             assert False, "must have mediatype, \
                 such as videoclip, snapshot, text"
+
+        if criteria['mediatype'] == 'videoclip':
+            return self._nativeapi_search(criteria)
+        else:
+            return self._legacy_search(criteria)
 
     def get_slices(self, xml_obj):
         slices = dict()
