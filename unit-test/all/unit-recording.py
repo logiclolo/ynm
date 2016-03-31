@@ -86,7 +86,6 @@ def test_edge_nativeapi_search():
         <sliceEnd>2016-02-18T03:19:42.782Z</sliceEnd>\
         </slices>\
         </root></stormgr>'
-
     tracks = []
     time = ('2016-02-15T06:34:04.206Z', '2016-02-18T03:19:42.782Z')
     tracks.append(VideoTrack('H265', 'videotest', time))

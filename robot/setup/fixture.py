@@ -9,6 +9,7 @@ from YNM.camera.service.snapshot import Snapshot
 from YNM.camera.service.ptz import PTZ
 from YNM.camera.service.privacy import Privacy
 from YNM.camera.service.motion import Motion
+from YNM.camera.service.recording import EdgeRecording
 import setting
 
 
@@ -57,6 +58,11 @@ def motion(cam):
     ''' Create motion object for you '''
 
     return Motion(cam)
+
+
+@pytest.fixture
+def edge(cam):
+    return EdgeRecording(cam)
 
 
 @pytest.fixture

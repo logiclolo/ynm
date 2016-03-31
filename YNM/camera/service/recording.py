@@ -4,11 +4,12 @@ import abc
 import requests
 import re
 from datetime import datetime
+import xml.etree.ElementTree as xmltree
 
 
 def time_convert(timestr):
 
-    if type(timestr) is datetime:
+    if type(timestr) is datetime or timestr is None:
         return timestr
 
     timestr = timestr.replace('T', ' ')
@@ -24,8 +25,8 @@ class IHealth(object):
     ''' deteremine storage health (esp. edge storage)
 
     Some storage may have capability of getting storage's health information
-    This interface make the caller to know if currently handled storage supports
-    this capability
+    This interface make the caller to know if currently handled storage
+    supports this capability
     '''
 
     @abc.abstractmethod
@@ -72,18 +73,23 @@ class IStorage(object):
         raise NotImplemented
 
     @abc.abstractmethod
+    def format(self, fs):
+        ''' returns format massage '''
+        raise NotImplemented()
+
+    @abc.abstractmethod
     def search(self, criteria):
         ''' returns a list of file with matched criteria in search '''
         raise NotImplemented()
 
 
-class ITimeline(object):
+class ISlice(object):
     __metaclass__ = abc.ABCMeta
-    ''' timeline interface, abstraction of continuous recording '''
+    ''' slice interface, abstraction of continuous recording '''
 
     @abc.abstractmethod
-    def timelines(self, criteria):
-        ''' returns a list of timeline each timeline contains several tracks
+    def get_slices(self, criteria):
+        ''' returns a list of slice each slice contains several tracks
         which is associated together '''
         raise NotImplemented()
 
@@ -173,9 +179,6 @@ class IRecordingService(object):
         raise NotImplemented()
 
 
-import xml.etree.ElementTree as xmltree
-
-
 class EdgeRecording (IStorage, IHealth):
     ''' VIVOTEK edge recording implementation '''
 
@@ -185,14 +188,17 @@ class EdgeRecording (IStorage, IHealth):
         self._edgecgi = self._cgiurl + '/admin/lsctrlrec.cgi'
         self._legacycgi = self._cgiurl + '/admin/lsctrl.cgi'
         self._fscgi = self._cgiurl + '/admin/getSDfilesystem.cgi'
+        self._formatcgi = self._cgiurl + '/admin/formatSD.cgi'
         self._auth = (self._camera.username, self._camera.password)
         self._status = ''
+        self.reset()
+        self._update_all_status()
+    
+    def reset(self):
         self._capacity = 0
         self._availablesize = 0
         self._usedsize = 0
-        self._filesystem = 'fat32'
-
-        self._update_all_status()
+        self._filesystem = ''
 
     def _update_all_status(self):
         command = {'cmd': 'queryStatus'}
@@ -205,6 +211,9 @@ class EdgeRecording (IStorage, IHealth):
         self._capacity = int(x.find('disk/i0/totalsize').text)
         self._availablesize = int(x.find('disk/i0/freespace').text)
         self._usedsize = int(x.find('disk/i0/usedspace').text)
+
+        if self._status == 'detached':
+            self.reset()
 
         r = requests.get(self._fscgi, auth=self._auth)
         if r.status_code != 200:
@@ -224,7 +233,7 @@ class EdgeRecording (IStorage, IHealth):
 
         x = xmltree.fromstring(r.content)
         root = x.find('root')
-        slices = self.timelines(root)
+        slices = self.get_slices(root)
         return slices
 
     def _legacy_search(self, criteria):
@@ -262,6 +271,12 @@ class EdgeRecording (IStorage, IHealth):
         self._update_all_status()
         return self._filesystem
 
+    def format(self, fs='fat32'):
+
+        fs = fs.lower().replace('-', '')
+        command = {'fstype': fs, 'alerten': 1}
+        requests.get(self._formatcgi, params=command, auth=self._auth)
+
     def search(self, criteria):
         if 'starttime' not in criteria:
             criteria['starttime'] = '1970-01-01T00:00:00.000Z'
@@ -275,7 +290,7 @@ class EdgeRecording (IStorage, IHealth):
         else:
             return self._legacy_search(criteria)
 
-    def timelines(self, xml_obj):
+    def get_slices(self, xml_obj):
         slices = dict()
         idx = 0
         for child in xml_obj:
@@ -283,30 +298,41 @@ class EdgeRecording (IStorage, IHealth):
                 slice = dict()
                 for et in child:
                     if et.tag == 'sliceStart' or et.tag == 'sliceEnd':
+                        if et.text == None:
+                            xmltree.dump(et)
                         slice.update({et.tag: time_convert(et.text)})
                     else:
                         slice.update({et.tag: et.text})
 
                 # append tracks information
-                tracks = self.get_tracks(slice)
+                tracks = self._get_tracks(slice)
                 slice.update({'tracks': tracks})
                 # append files information
-                files = self.get_files(slice, mediatype='videoclip')
+                files = self._get_files(slice, mediaType='videoclip')
                 slice.update({'files': files})
 
             slices.update({idx: slice})
             idx += 1
         return slices
 
-    def get_files(self, slice, mediaType="all"):
+    def _get_files(self, slice, mediaType="all"):
 
-        timeinterval = "BETWEEN '" + slice['sliceStart'] + \
-                       "' AND '" + slice['sliceEnd'] + "'"
+        slice['sliceStart'] = time_convert(slice['sliceStart'])
+        slice['sliceEnd'] = time_convert(slice['sliceEnd'])
+
         command = {'cmd': 'search',
-                   'recToken': slice['recordingToken'],
-                   'triggerTime': timeinterval}
+                   'recToken': slice['recordingToken']}
+
         if mediaType == "videoclip":
             command.update({'mediaType': mediaType})
+            if slice['sliceStart'] is not None:
+                command.update({'starttime': slice['sliceStart'].isoformat()})
+            if slice['sliceEnd'] is not None:
+                command.update({'endtime': slice['sliceEnd'].isoformat()})
+        elif mediaType != "all":
+            timeinterval = "BETWEEN '" + slice['sliceStart'].isoformat() + \
+                           "' AND '" + slice['sliceEnd'].isoformat() + "'"
+            command.update({'triggerTime': timeinterval})
         r = requests.get(self._legacycgi, params=command, auth=self._auth)
         x = xmltree.fromstring(r.content)
         files = []
@@ -329,14 +355,21 @@ class EdgeRecording (IStorage, IHealth):
                 files.append(SnapFile(label, trigger,  path, locked, tri_time))
         return files
 
-    def get_tracks(self, slice):
+    def _get_tracks(self, slice):
+
+        slice['sliceStart'] = time_convert(slice['sliceStart'])
+        slice['sliceEnd'] = time_convert(slice['sliceEnd'])
+
         command = {'cmd': 'getmediaattr',
                    'recToken': slice['recordingToken'],
-                   'recTime': slice['sliceStart']}
+                   'recTime': slice['sliceStart'].isoformat()}
         r = requests.get(self._edgecgi, params=command, auth=self._auth)
         x = xmltree.fromstring(r.content)
 
+        # error handle
         rec = x.find('root/recording/i0')
+        if rec is None:
+            return None
         tracks = []
         for idx in range(0, int(rec.find('trackNum').text)):
             idx_track = 'trackAttributes/i' + str(idx)
@@ -358,6 +391,17 @@ class EdgeRecording (IStorage, IHealth):
 
         return tracks
 
+    def delete_a_slice(self, slice):
+        starttime = time_convert(slice['sliceStart']).isoformat()
+        endtime = time_convert(slice['sliceEnd']).isoformat()
+
+        command = {'cmd': 'truncateRecording',
+                   'recToken': slice['recordingToken'],
+                   'recStartTime': starttime,
+                   'recEndTime': endtime}
+        requests.get(self._edgecgi, params=command, auth=self._auth)
+
+    
     # IHealth interface
     def health(self):
         raise NotImplemented()
@@ -428,7 +472,7 @@ class SnapFile(IFile):
 
 
 IStorage.register(EdgeRecording)
-ITimeline.register(EdgeRecording)
+ISlice.register(EdgeRecording)
 
 ITrack.register(VideoTrack)
 ITrack.register(AudioTrack)
